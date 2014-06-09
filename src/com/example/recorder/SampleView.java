@@ -70,17 +70,8 @@ public class SampleView extends Activity implements OnClickListener{
 				CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
 				mRecorder.setProfile(profile);
 				
-				long freeByteSize = 0;
-				String state = Environment.getExternalStorageState();
-
-				//外部保存領域が使用可能かチェック
-				if(Environment.MEDIA_MOUNTED.equals(state) || 
-				    Environment.MEDIA_MOUNTED_READ_ONLY.equals(state))
-				{
-				  //サイズ取得
-				  freeByteSize = Environment.getExternalStorageDirectory().getFreeSpace();
-				  Log.e("freesize:",Long.toString(freeByteSize));
-				}
+				
+				long freeByteSize = 1073741824+1;
 				
 				//空き容量が1GByte以下なら削除処理
 				if(freeByteSize<=1073741824){
