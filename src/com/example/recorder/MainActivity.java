@@ -1,11 +1,13 @@
 package com.example.recorder;
 
+import java.util.Calendar;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.SyncStateContract.Constants;
 import android.util.Log;
 import android.view.View;
@@ -16,6 +18,7 @@ public class MainActivity extends Activity implements OnClickListener{
 	private Button movie;
 	private Button setting;
 	private Button folder;
+	RecTimer mRecTimer;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -30,9 +33,7 @@ public class MainActivity extends Activity implements OnClickListener{
         setting.setOnClickListener(this);
         
         folder = (Button)findViewById(R.id.Folder);
-        folder.setOnClickListener(this);
-        
-      
+        folder.setOnClickListener(this);      
 	}
 
 	@Override
@@ -40,16 +41,24 @@ public class MainActivity extends Activity implements OnClickListener{
 		// TODO 自動生成されたメソッド・スタブ
 		switch (v.getId()) {
 		case R.id.Movie:
+			
 			/*
 			Intent intent = new Intent(this,SampleView.class);
 			startActivity(intent);
 			Log.e("click", "click");
 			*/
-			RecTimer mRecTimer=new RecTimer(getApplicationContext());
-			mRecTimer.setTimer(SampleView.class,10*1000,0);
-			
-			
+			Intent intent=new Intent(this,RecTimer.class);
+			PendingIntent sender = PendingIntent.getBroadcast(this,0,intent,0);
+			Calendar cal=Calendar.getInstance();
+			cal.setTimeInMillis(System.currentTimeMillis());
+			cal.add(cal.SECOND,1);
+			AlarmManager alarmManager=(AlarmManager) getSystemService(Context.ALARM_SERVICE);
+			long firsttime=SystemClock.elapsedRealtime();
+			firsttime+=10*1000;
+			alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,firsttime,10*1000,sender);
+			Log.e("click", "click");	
 			break;
+			
 		    
 		case R.id.Setting:
 			
