@@ -6,27 +6,47 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
+import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.StatFs;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 
 public class SampleView extends Activity implements OnClickListener{
 	private String fileName;
+	private SView sview;
 	private SurfaceHolder holder;
 	private MediaRecorder mRecorder;
+	private boolean isRecording;
 
-	// 録画のプレビューにSurfaceが必要なのでSurfaceViewのサブクラスを定義する
+	
 	class SView extends SurfaceView implements SurfaceHolder.Callback {
-
+		private final Runnable func=new Runnable(){
+			@Override
+			public void run(){
+				//sview.surfaceDestroyed(holder);
+				// 録画を停止
+				mRecorder.stop();
+				mRecorder.reset();
+				Log.e("Sview","stop");
+			}
+			
+		};
+		
 		SView(Context context) {
 			super(context);
 			holder = getHolder();
@@ -34,51 +54,60 @@ public class SampleView extends Activity implements OnClickListener{
 			// プレビューに使うサーフェスはプッシュバッファでなくてはならない
 			holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 		}
+		
+		
 
 		// サーフェスが作成されると呼ばれる
 		public void surfaceCreated(SurfaceHolder holder) {
-			do{
-				// MediaRecorderのインスタンスを作成
-				mRecorder = new MediaRecorder();
+			Log.e("Serface","Created");
+			// MediaRecorderのインスタンスを作成
+			mRecorder = new MediaRecorder();
 
-				// ビデオ入力ソースをカメラに設定
-				mRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-				mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+			// ビデオ入力ソースをカメラに設定
+			mRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+			mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+			// プレビューに使用するサーフェスを設定
+			mRecorder.setPreviewDisplay(holder.getSurface());
+			CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
+			mRecorder.setProfile(profile);
 
-				// プレビューに使用するサーフェスを設定
-				mRecorder.setPreviewDisplay(holder.getSurface());
-				CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
-				mRecorder.setProfile(profile);
+			//空き容量が1GByte以下なら削除処理
+			if(false){
+				deletefiles();
+			}
 
-				//空き容量が1GByte以下なら削除処理
-				if(false){
-					deletefiles();
-				}
+			//スタートボタンを押す直前の時刻による名前付け
+			// 現在の時刻を取得
+			Date date = new Date();
+			// 表示形式を設定
+			SimpleDateFormat sdf = new SimpleDateFormat("MMdd_kkmm");
+			fileName = "/sdcard/download/" + sdf.format(date) + ".mp4";
 
-				//スタートボタンを押す直前の時刻による名前付け
-				// 現在の時刻を取得
-				Date date = new Date();
-				// 表示形式を設定
-				SimpleDateFormat sdf = new SimpleDateFormat("MMdd_kkmm");
-				fileName = "/sdcard/download/" + sdf.format(date) + ".mp4";
+			// 出力ファイルのパスを指定
+			mRecorder.setOutputFile(fileName);
+			//mRecorder.setMaxDuration(10);
 
-				// 出力ファイルのパスを指定
-				mRecorder.setOutputFile(fileName);
-				//mRecorder.setMaxDuration(10);
-
-				try {
-					// レコーダーを準備
-					mRecorder.prepare();
-				} catch (IllegalStateException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				// 録画を開始
-				
-				mRecorder.start();
-				
-			}while(false);
+			try {
+				// レコーダーを準備
+				mRecorder.prepare();
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			// 録画を開始
+			mRecorder.start();
+			try {
+				Thread.sleep(10*1000);
+			} catch (InterruptedException e) {
+				// TODO 自動生成された catch ブロック
+				e.printStackTrace();
+			}
+			mRecorder.stop();
+			mRecorder.reset();
+			mRecorder.release();
+			Log.e("Sview","stop");
+			//new Handler().postDelayed(func,10*1000);
 		}
 
 		// サーフェスが破棄されると呼ばれる
@@ -93,26 +122,16 @@ public class SampleView extends Activity implements OnClickListener{
 		// サーフェスの状態が変化したら呼ばれる
 		public void surfaceChanged(SurfaceHolder holder, int format,
 				int w, int h) {
-			// 録画を停止
-						mRecorder.stop();
-						mRecorder.reset();
 		}
 	}
 	
 	@Override
-	public void onClick(View v) {
-		// TODO 自動生成されたメソッド・スタブ
-		/*
-		switch (v.getId()) {
-		case START:
-			movieMediaRecorder.start();
-			break;
-
-		case STOP:
-			movieMediaRecorder.stop();
-			break;
-		}
-		 */
+	public void onCreate(Bundle savedInstanceState){
+		super.onCreate(savedInstanceState);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		sview = new SView(this);
+		setContentView(sview);
 	}
 
 	public int getsize(){
@@ -165,5 +184,11 @@ public class SampleView extends Activity implements OnClickListener{
 		//削除処理
 		File delfile=new File(Environment.getExternalStorageDirectory().getPath()+"/download/"+deletefilename+".mp4");
 		delfile.delete();
+	}
+
+	@Override
+	public void onClick(View arg0) {
+		// TODO 自動生成されたメソッド・スタブ
+		
 	}
 }
