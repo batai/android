@@ -6,47 +6,29 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.os.StatFs;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.RelativeLayout;
 
 public class SampleView extends Activity implements OnClickListener{
 	private String fileName;
 	private SView sview;
 	private SurfaceHolder holder;
 	private MediaRecorder mRecorder;
-	private boolean isRecording;
 
-	
+
 	class SView extends SurfaceView implements SurfaceHolder.Callback {
-		private final Runnable func=new Runnable(){
-			@Override
-			public void run(){
-				//sview.surfaceDestroyed(holder);
-				// 録画を停止
-				mRecorder.stop();
-				mRecorder.reset();
-				Log.e("Sview","stop");
-			}
-			
-		};
-		
+
 		SView(Context context) {
 			super(context);
 			holder = getHolder();
@@ -54,8 +36,8 @@ public class SampleView extends Activity implements OnClickListener{
 			// プレビューに使うサーフェスはプッシュバッファでなくてはならない
 			holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 		}
-		
-		
+
+
 
 		// サーフェスが作成されると呼ばれる
 		public void surfaceCreated(SurfaceHolder holder) {
@@ -103,20 +85,14 @@ public class SampleView extends Activity implements OnClickListener{
 				// TODO 自動生成された catch ブロック
 				e.printStackTrace();
 			}
+			//録画を停止
 			mRecorder.stop();
 			mRecorder.reset();
-			mRecorder.release();
 			Log.e("Sview","stop");
-			//new Handler().postDelayed(func,10*1000);
 		}
 
 		// サーフェスが破棄されると呼ばれる
 		public void surfaceDestroyed(SurfaceHolder holder) {
-			// 録画を停止
-			mRecorder.stop();
-			mRecorder.reset();
-			// 使わなくなった時点でレコーダーリソースを解放する
-			mRecorder.release();
 		}
 
 		// サーフェスの状態が変化したら呼ばれる
@@ -124,7 +100,7 @@ public class SampleView extends Activity implements OnClickListener{
 				int w, int h) {
 		}
 	}
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
@@ -140,7 +116,7 @@ public class SampleView extends Activity implements OnClickListener{
 		//Log.e("getsize1", String.valueOf(gb));
 		return gb;
 	}
-	
+
 	public void deletefiles(){
 		//ファイルの作成日時を見て最も古いファイルを削除する
 		//(宿題:容量の半分分だけループして削除するようにする)
@@ -189,6 +165,6 @@ public class SampleView extends Activity implements OnClickListener{
 	@Override
 	public void onClick(View arg0) {
 		// TODO 自動生成されたメソッド・スタブ
-		
+
 	}
 }
